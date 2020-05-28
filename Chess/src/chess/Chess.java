@@ -7,15 +7,15 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Chess extends Application {
-
-    final double windowSize = 900;
+    
+    final double windowSize = 1000;
     static Group root = new Group();
-    Board board = new Board(0, 0, windowSize);
+    Board board = new Board(windowSize);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         root.getChildren().add(board);
-        board.setup();
+        board.setupPieces();
         Scene scene = new Scene(root, windowSize, windowSize);
         primaryStage.setScene(scene);
         primaryStage.setTitle("JavaFX Chess");
