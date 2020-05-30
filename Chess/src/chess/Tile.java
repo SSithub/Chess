@@ -57,7 +57,6 @@ public class Tile extends Rectangle {
 
     void primary() {
         this.setBorder(primaryColor);
-        check = true;
     }
 
     void highlight() {
