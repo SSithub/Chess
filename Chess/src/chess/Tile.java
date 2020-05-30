@@ -6,25 +6,34 @@ import javafx.scene.shape.StrokeType;
 
 public class Tile extends Rectangle {
 
+    final Color tan = Color.web("D2B48C");
+    final Color tanDark = Color.web("A37A44");
     Piece piece = null;
     int row;
     int col;
     boolean highlighted;
-    final Color highlight = Color.web("3FA7D6");
-    final Color primary = Color.web("04E762");
-    boolean enpassantSquare = false;
+    final Color highlightColor = Color.web("3FA7D6");
+    final Color primaryColor = Color.web("04E762");
+    final Color checkColor = Color.web("FF3C38");
+    boolean enpassant = false;
+    boolean castling = false;
+    boolean check = false;
 
-    public Tile(Color color, double x, double y, double size) {
-        this.setFill(color);
+    public Tile(double x, double y, double size) {
         this.setTranslateX(x);
         this.setTranslateY(y);
         this.setWidth(size);
         this.setHeight(size);
-        this.setStroke(highlight);
+        this.setStroke(highlightColor);
         this.setStrokeType(StrokeType.INSIDE);
         row = (int) (this.getTranslateY() / size);
         col = (int) (this.getTranslateX() / size);
-        unhighlight();
+        if ((row + col) % 2 == 0) {
+            this.setFill(tan);
+        } else {
+            this.setFill(tanDark);
+        }
+        unborder();
     }
 
     void setPiece(Piece piece) {
@@ -38,36 +47,46 @@ public class Tile extends Rectangle {
         piece.setPosAndSize(this.getTranslateX(), this.getTranslateY(), this.getWidth());
     }
 
-    void toggleHighlight() {
-        if (highlighted) {
-            unhighlight();
-        } else {
-            highlight();
-        }
+    Piece getPiece() {
+        return piece;
+    }
+
+    boolean isEmpty() {
+        return this.piece == null;
     }
 
     void primary() {
-        this.setStroke(primary);
-        this.setStrokeWidth(getWidth() / 15);
-        highlighted = true;
+        this.setBorder(primaryColor);
+        check = true;
     }
 
     void highlight() {
-        this.setStroke(highlight);
-        this.setStrokeWidth(getWidth() / 15);
+        this.setBorder(highlightColor);
         highlighted = true;
     }
 
-    void unhighlight() {
-        this.setStrokeWidth(0);
-        highlighted = false;
+    void unborder() {
+        if (!check) {
+            this.setStrokeWidth(0);
+            highlighted = false;
+        }
+    }
+
+    void check() {
+        this.setBorder(checkColor);
+        check = true;
+    }
+
+    private void setBorder(Color color) {
+        this.setStroke(color);
+        this.setStrokeWidth(this.getWidth() / 15);
     }
 
     @Override
     public Tile clone() {
-        Tile clone = new Tile((Color) this.getFill(), this.getTranslateX(), this.getTranslateY(), this.getWidth());
-        if (this.piece != null) {
-            clone.piece = this.piece.clone();
+        Tile clone = new Tile(this.getTranslateX(), this.getTranslateY(), this.getWidth());
+        if (!this.isEmpty()) {
+            clone.setPiece(getPiece().clone());
         }
         return clone;
     }

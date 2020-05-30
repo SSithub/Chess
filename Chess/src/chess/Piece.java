@@ -95,6 +95,45 @@ public abstract class Piece extends ImageView {
         return moves;
     }
 
+    static ArrayList<int[]> removeMovesCausingCheck(ArrayList<Tile[][]> history, Piece primary, ArrayList<int[]> moves) {
+        Tile[][] board = history.get(0);
+        boolean white = primary.white;
+        King king = null;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Piece piece = board[i][j].piece;
+                if (piece != null && piece instanceof King && piece.white == white) {
+                    king = (King) piece;
+                    break;
+                }
+            }
+        }
+        int movesSize = moves.size();
+        for (int i = 0; i < movesSize; i++) {
+            int[] move = moves.get(i);
+            //Simulate Move
+            Tile[][] simulation = Board.copyBoard(board);
+            simulation[primary.row][primary.col].piece = null;
+            Tile tileForMove = simulation[move[0]][move[1]];
+            tileForMove.placePiece(primary);
+            //Check if any enemy can take the King
+            for (int j = 0; j < 8; j++) {
+                for (int k = 0; k < 8; k++) {
+                    Piece piece = simulation[j][k].piece;
+                    if (piece.white != white) {
+                        //Check each enemy move for a King capture
+                        ArrayList<int[]> enemyMoves = piece.availableMoves(history);
+                        int enemyMovesSize = enemyMoves.size();
+                        for (int l = 0; l < enemyMovesSize; l++) {
+                            int[] enemyMove = enemyMoves.get(l);
+                        }
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
     public abstract ArrayList<int[]> availableMoves(ArrayList<Tile[][]> history);
 
     public abstract Piece clone();
@@ -113,7 +152,7 @@ public abstract class Piece extends ImageView {
             Tile[][] current = history.get(0);
             moves.addAll(kingMoves(current));
             Tile[][] alteredBoard = Board.copyBoard(current);
-            for(int i = 0; i < moves.size(); i++){//Remove enemies that can be captured by the king for accurate danger squares
+            for (int i = 0; i < moves.size(); i++) {//Remove enemies that can be captured by the king for accurate danger squares
                 int[] move = moves.get(i);
                 alteredBoard[move[0]][move[1]].piece = null;
             }
@@ -157,6 +196,8 @@ public abstract class Piece extends ImageView {
             for (int i = 0; i < toBeRemoved.size(); i++) {
                 moves.remove((int) toBeRemoved.get(i));
             }
+            //CASTLING
+            moves.addAll(castling(current));
             return moves;
         }
 
@@ -166,8 +207,32 @@ public abstract class Piece extends ImageView {
             moves.addAll(diagonals(row, col, board, white, 1));
             return moves;
         }
-        
-        ArrayList<int[]> castling(Tile[][] board){
+
+        ArrayList<int[]> castling(Tile[][] board) {
+            ArrayList<int[]> moves = new ArrayList<>();
+            //Looking for Rook to the right
+            int i = row;
+            int j = col;
+            while (inBounds(i, ++j)) {
+                Piece piece = board[i][j].piece;
+                if (piece != null && piece instanceof Rook && piece.notMoved) {
+                    moves.add(new int[]{i, j, 2});
+                } else if (piece != null) {
+                    break;
+                }
+            }
+            //Looking for Rook to the left
+            i = row;
+            j = col;
+            while (inBounds(i, --j)) {
+                Piece piece = board[i][j].piece;
+                if (piece != null && piece instanceof Rook && piece.notMoved) {
+                    moves.add(new int[]{i, j, 2});
+                } else if (piece != null) {
+                    break;
+                }
+            }
+            return moves;
         }
 
         @Override

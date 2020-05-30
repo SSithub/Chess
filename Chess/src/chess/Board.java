@@ -15,19 +15,14 @@ public class Board extends Group {
     double size;
     Tile primaryTile = null;
     boolean whiteTurn = true;
+    boolean check = false;
 
     public Board(double size) {
         this.size = size;
         double tileWidth = size / 8;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                Color tileColor;
-                if ((i + j) % 2 == 0) {//Every other tile
-                    tileColor = tan;
-                } else {
-                    tileColor = tanDark;
-                }
-                Tile tile = new Tile(tileColor, (j * tileWidth), (i * tileWidth), tileWidth);
+                Tile tile = new Tile(j * tileWidth, i * tileWidth, tileWidth);
                 board[i][j] = tile;
                 board[i][j].setOnMouseClicked((t) -> {
                     onActivation(tile);
@@ -88,12 +83,9 @@ public class Board extends Group {
                     primaryTile.piece.notMoved = false;//Moved piece
                     primaryTile.piece = null;//Clear piece from primary tile
                     primaryTile = null;//Clear primary tile
-                    unactivateAll();//Clear all highlighted squares
-                    whiteTurn = !whiteTurn;//Alternate turns
-                    history.add(0, copyBoard(board));
-                    //Enpassant move
-                    if (tile.enpassantSquare) {
-                        tile.enpassantSquare = false;
+                    turnDone();
+                    if (tile.enpassant) {//Enpassant move
+                        tile.enpassant = false;
                         Tile captureSquare;
                         if (tile.piece.white) {
                             captureSquare = board[tile.row + 1][tile.col];
@@ -105,16 +97,32 @@ public class Board extends Group {
                     }
                 } else {//Unempty tile
                     if (tile.piece.white == whiteTurn) {//Ally
-                        highlightAvailableMoves(tile);
+                        if (tile.castling) {//Castling move
+                            tile.castling = false;
+                            Piece rook = tile.piece;
+                            Piece king = primaryTile.piece;
+                            //Find which side the Rook is on relative to the King
+                            final int dirOne;
+                            if (king.col - rook.col < 0) {
+                                dirOne = 1;
+                            } else {
+                                dirOne = -1;
+                            }
+                            tile.piece = null;//Remove Rook from the old Tile
+                            board[king.row][king.col + dirOne].placePiece(rook);//Move Rook next to King
+                            primaryTile.piece = null;//Remove King from old Tile
+                            board[king.row][king.col + dirOne + dirOne].placePiece(king);//Move King past Rook
+                            turnDone();
+                        } else {//Ally that is not a Rook that can be used to castled and the King is not in check
+                            highlightAvailableMoves(tile);
+                        }
                     } else {//Enemy
                         if (tile.highlighted) {
                             tile.piece.setVisible(false);
                             tile.placePiece(primaryTile.piece);
                             primaryTile.piece = null;
                             primaryTile = null;
-                            unactivateAll();
-                            whiteTurn = !whiteTurn;
-                            history.add(0, copyBoard(board));
+                            turnDone();
                         }
                     }
                 }
@@ -126,15 +134,30 @@ public class Board extends Group {
         }
     }
 
+    void turnDone() {
+        whiteTurn = !whiteTurn;//Alternate turns
+        history.add(0, copyBoard(board));//Add the new board to the history of moves
+        checkForCheck(whiteTurn);
+        unactivateAll();
+    }
+
     void highlightAvailableMoves(Tile tile) {
         unactivateAll();
-        tile.primary();
+        if (tile.check) {
+            tile.check();
+        } else {
+            tile.primary();
+        }
         ArrayList<int[]> moves = tile.piece.availableMoves(history);
         for (int k = 0; k < moves.size(); k++) {
             int[] spot = moves.get(k);
             board[spot[0]][spot[1]].highlight();
-            if (spot.length > 2 && spot[2] == 1) {
-                board[spot[0]][spot[1]].enpassantSquare = true;
+            if (spot.length > 2) {
+                if (spot[2] == 1) {
+                    board[spot[0]][spot[1]].enpassant = true;
+                } else if (spot[2] == 2) {
+                    board[spot[0]][spot[1]].castling = true;
+                }
             }
         }
         primaryTile = tile;//Store selected tile
@@ -162,8 +185,44 @@ public class Board extends Group {
     void unactivateAll() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                board[i][j].unhighlight();
+                board[i][j].unborder();
             }
+        }
+    }
+
+    void checkForCheck(boolean white) {//To be called after each turn, checks for a king with the specified color that is in check
+        boolean inCheck = false;
+        Piece king = null;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Piece piece = board[i][j].piece;
+                if (piece != null && piece instanceof Piece.King && piece.white == white) {
+                    king = board[i][j].piece;
+                }
+                board[i][j].check = false;//Reset the red highlight on the King when in check
+            }
+        }
+        //Loop through the board and find an enemy piece that can capture the king if the king doesn't move
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Piece piece = board[i][j].piece;
+                if (piece != null && piece.white != white) {
+                    ArrayList<int[]> moves = piece.availableMoves(history);
+                    int size = moves.size();
+                    for (int k = 0; k < size; k++) {
+                        int[] move = moves.get(k);
+                        if (move[0] == king.row && move[1] == king.col) {
+                            inCheck = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        //Restrict board for the king in check
+        if (inCheck) {
+            Tile kingTile = board[king.row][king.col];
+            kingTile.check();
         }
     }
 
