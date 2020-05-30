@@ -6,18 +6,17 @@ import javafx.scene.shape.StrokeType;
 
 public class Tile extends Rectangle {
 
-    final Color tan = Color.web("D2B48C");
-    final Color tanDark = Color.web("A37A44");
-    Piece piece = null;
-    int row;
-    int col;
-    boolean highlighted;
-    final Color highlightColor = Color.web("3FA7D6");
-    final Color primaryColor = Color.web("04E762");
-    final Color checkColor = Color.web("FF3C38");
-    boolean enpassant = false;
-    boolean castling = false;
-    boolean check = false;
+    private final Color tan = Color.web("D2B48C");
+    private final Color tanDark = Color.web("A37A44");
+    private Piece piece = null;
+    private int row;
+    private int col;
+    private final Color highlightColor = Color.web("3FA7D6");
+    private final Color primaryColor = Color.web("04E762");
+    private final Color checkColor = Color.web("FF3C38");
+    private boolean highlightColored = false;
+    private boolean checkColored = false;
+    private boolean primaryColored = false;
 
     public Tile(double x, double y, double size) {
         this.setTranslateX(x);
@@ -33,7 +32,7 @@ public class Tile extends Rectangle {
         } else {
             this.setFill(tanDark);
         }
-        unborder();
+        setBorderOff();
     }
 
     void setPiece(Piece piece) {
@@ -48,33 +47,39 @@ public class Tile extends Rectangle {
     }
 
     Piece getPiece() {
-        return piece;
+        return this.piece;
     }
 
     boolean isEmpty() {
         return this.piece == null;
     }
 
-    void primary() {
+    boolean isPrimaryColored() {
+        return this.primaryColored;
+    }
+
+    boolean isHighlightColored() {
+        return this.highlightColored;
+    }
+
+    boolean isCheckColored() {
+        return this.checkColored;
+    }
+
+    void setPrimary() {
         this.setBorder(primaryColor);
-        check = true;
     }
 
-    void highlight() {
+    void setHighlight() {
         this.setBorder(highlightColor);
-        highlighted = true;
     }
 
-    void unborder() {
-        if (!check) {
-            this.setStrokeWidth(0);
-            highlighted = false;
-        }
-    }
-
-    void check() {
+    void setCheck() {
         this.setBorder(checkColor);
-        check = true;
+    }
+
+    void setBorderOff() {
+        this.setStrokeWidth(0);
     }
 
     private void setBorder(Color color) {
