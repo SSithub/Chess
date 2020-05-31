@@ -1,3 +1,5 @@
+package old;
+
 //package chess;
 //
 //import java.io.File;
