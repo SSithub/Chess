@@ -1,7 +1,9 @@
 package chess;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -16,36 +18,35 @@ public class Menu extends Group {
     private final double GAP;
     private VBox buttons;
 
-    Menu(double size) {
+    public Menu(double size) {
         this.size = size;
         WIDTH = size / 3;
         GAP = size / 50;
         buttons = new VBox(GAP);
         buttons.setAlignment(Pos.CENTER);
         buttons.setTranslateX((size - WIDTH) / 2);
-        buttons.setTranslateY(GAP * 3);
+        buttons.setTranslateY(GAP * 15);
         buttons.getChildren().addAll(newGameButton(), quitButton());
         this.getChildren().addAll(overlay(), buttons);
         this.setVisible(false);
     }
 
-    Rectangle overlay() {
-        Rectangle overlay = new Rectangle();
+    public ObservableList<Node> getButtons() {
+        return buttons.getChildren();
+    }
+
+    private Rectangle overlay() {
+        Rectangle overlay = new Rectangle(size, size);
         overlay.setOpacity(.6);
-        overlay.setWidth(size);
-        overlay.setHeight(size);
         return overlay;
     }
 
-    StackPane newGameButton() {
+    private StackPane newGameButton() {
         StackPane newGameButton = createButton("New Game");
-        newGameButton.setOnMouseClicked((event) -> {
-            System.out.println("RESET GAME");
-        });
         return newGameButton;
     }
 
-    StackPane quitButton() {
+    private StackPane quitButton() {
         StackPane quitButton = createButton("Quit");
         quitButton.setOnMouseClicked((event) -> {
             System.exit(0);

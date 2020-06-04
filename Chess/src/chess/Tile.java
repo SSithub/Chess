@@ -17,6 +17,7 @@ public class Tile extends Rectangle {
     private boolean highlightColored = false;
     private boolean checkColored = false;
     private boolean primaryColored = false;
+    private int[] move = null;
 
     public Tile(double x, double y, double size) {
         this.setTranslateX(x);
@@ -35,56 +36,79 @@ public class Tile extends Rectangle {
         setBorderOff();
     }
 
-    void setPiece(Piece piece) {
+    public void setPiece(Piece piece) {
         this.piece = piece;
         piece.setPosAndSize(this.getTranslateX(), this.getTranslateY(), this.getWidth());
     }
 
-    void placePiece(Piece piece) {
+    public void placePiece(Piece piece) {
         this.piece = piece;
         piece.notMoved = false;
         piece.setPosAndSize(this.getTranslateX(), this.getTranslateY(), this.getWidth());
     }
 
-    Piece getPiece() {
+    public Piece getPiece() {
         return this.piece;
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return this.piece == null;
     }
 
-    boolean isPrimaryColored() {
+    public boolean isPrimaryColored() {
         return this.primaryColored;
     }
 
-    boolean isHighlightColored() {
+    public boolean isHighlightColored() {
         return this.highlightColored;
     }
 
-    boolean isCheckColored() {
+    public boolean isCheckColored() {
         return this.checkColored;
     }
 
-    void setPrimary() {
+    public void setPrimary() {
         this.setBorder(primaryColor);
+        primaryColored = true;
     }
 
-    void setHighlight() {
+    public void setHighlight() {
         this.setBorder(highlightColor);
+        highlightColored = true;
     }
 
-    void setCheck() {
+    public void setCheck() {
         this.setBorder(checkColor);
+        checkColored = true;
     }
 
-    void setBorderOff() {
+    public void setBorderOff() {
         this.setStrokeWidth(0);
+        primaryColored = false;
+        highlightColored = false;
+        checkColored = false;
     }
 
     private void setBorder(Color color) {
         this.setStroke(color);
         this.setStrokeWidth(this.getWidth() / 15);
+    }
+
+    public void setMove(int[] move) {
+        this.move = move;
+    }
+
+    public int[] getMove() {
+        return move;
+    }
+
+    public void clearTemps() {
+        setBorderOff();
+        move = null;
+    }
+
+    public void clearPiece() {
+        piece = null;
     }
 
     @Override
