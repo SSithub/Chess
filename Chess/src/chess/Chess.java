@@ -9,15 +9,18 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 public class Chess extends Application {
-    
+
     final static double SIZE = 1000;
     private static Group root = new Group();
+    private static Group inputOverlay = new Group();
     private static Group miscUI = new Group();
-    public static int[] inputs = null;
+    public static int[] whiteInputs = null;
+    public static int[] blackInputs = null;
     private Menu menu;
-    private Player player;
+    private Player whitePlayer;
+    private Player blackPlayer;
     private Game game;
-    
+
     private void setupListeners(Scene scene) {
         scene.setOnKeyPressed((t) -> {
             if (t.getCode().equals(KeyCode.ESCAPE)) {
@@ -29,29 +32,41 @@ public class Chess extends Application {
             }
         });
     }
-    
+
     private void addGraphics(Board board) {
-        root.getChildren().addAll(board.getTileList(), board.getPieceList(), miscUI);
+        root.getChildren().addAll(board.getTileList(), Graphics.ooordinates(), board.getPieceList(), miscUI);
     }
-    
+
     public void showBoard(Board board) {
         root.getChildren().set(0, board.getTileList());
-        root.getChildren().set(1, board.getPieceList());
+        root.getChildren().set(2, board.getPieceList());
     }
-    
+
     private void initVars() {
         game = new Game(this);
         //Graphics
-        menu = new Menu(SIZE);
-        player = new Player(SIZE);
-        miscUI.getChildren().addAll(player, menu);
+        menu = new Menu();
+        whitePlayer = new Player(true);
+        blackPlayer = new Player(false);
+        inputOverlay.getChildren().addAll(whitePlayer, blackPlayer);
+        resetMisc();
     }
-    
+
+    public void acceptInputs(boolean white) {
+        if (!white) {
+            whitePlayer.setVisible(false);
+            blackPlayer.setVisible(true);
+        } else {
+            whitePlayer.setVisible(true);
+            blackPlayer.setVisible(false);
+        }
+    }
+
     public void resetMisc() {
         miscUI.getChildren().clear();
-        miscUI.getChildren().addAll(player, menu);
+        miscUI.getChildren().addAll(inputOverlay, menu);
     }
-    
+
     public void addToUI(Node node, boolean overInputs) {
         if (overInputs) {
             miscUI.getChildren().add(1, node);
@@ -59,14 +74,18 @@ public class Chess extends Application {
             miscUI.getChildren().add(0, node);
         }
     }
-    
+
     @Override
     public void start(Stage primaryStage) {
         initVars();
+        acceptInputs(true);
         addGraphics(game.getCurrentBoard());
         menu.getButtons().get(0).setOnMouseClicked((t) -> {
             game.resetGame();
             menu.setVisible(false);
+        });
+        menu.getButtons().get(1).setOnMouseClicked((t) -> {
+
         });
         Scene scene = new Scene(root, SIZE, SIZE);
         setupListeners(scene);
@@ -76,7 +95,7 @@ public class Chess extends Application {
         primaryStage.setTitle("JavaFX Chess");
         primaryStage.show();
     }
-    
+
     public static void main(String[] args) {
         launch(args);
     }

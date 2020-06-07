@@ -16,14 +16,16 @@ public class Moves {
                     for (int dir = -1; dir <= 1; dir += 2) {
                         int i = piece.row;
                         int j = piece.col;
-                        while (inBounds(i, j += dir)) {
-                            Tile tile = board.getTile(i, j);
-                            if (Math.abs(j - piece.col) < 2 && spotUnderAttack(new int[]{i, j}, board, piece.white)) {
-                                break;
-                            } else if (!tile.isEmpty() && !(tile.getPiece() instanceof Piece.Rook)) {
-                                break;
-                            } else if (tile.getPiece() instanceof Piece.Rook && tile.getPiece().notMoved) {
-                                moves.add(new int[]{i, j, 0, 1});
+                        if (!spotUnderAttack(new int[]{i, j}, board, piece.white)) {
+                            while (inBounds(i, j += dir)) {
+                                Tile tile = board.getTile(i, j);
+                                if (Math.abs(j - piece.col) < 2 && spotUnderAttack(new int[]{i, j}, board, piece.white)) {
+                                    break;
+                                } else if (!tile.isEmpty() && !(tile.getPiece() instanceof Piece.Rook)) {
+                                    break;
+                                } else if (tile.getPiece() instanceof Piece.Rook && tile.getPiece().notMoved) {
+                                    moves.add(new int[]{i, j, 0, 1});
+                                }
                             }
                         }
                     }

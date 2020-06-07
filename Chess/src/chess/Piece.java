@@ -84,7 +84,7 @@ public abstract class Piece extends ImageView {
         return hash;
     }
 
-    static class King extends Piece {
+    public static class King extends Piece {
 
         King(boolean white) {
             this.white = white;
@@ -121,7 +121,7 @@ public abstract class Piece extends ImageView {
         }
     }
 
-    static class Queen extends Piece {
+    public static class Queen extends Piece {
 
         Queen(boolean white) {
             this.white = white;
@@ -158,7 +158,7 @@ public abstract class Piece extends ImageView {
         }
     }
 
-    static class Bishop extends Piece {
+    public static class Bishop extends Piece {
 
         Bishop(boolean white) {
             this.white = white;
@@ -195,7 +195,7 @@ public abstract class Piece extends ImageView {
         }
     }
 
-    static class Knight extends Piece {
+    public static class Knight extends Piece {
 
         Knight(boolean white) {
             this.white = white;
@@ -232,7 +232,7 @@ public abstract class Piece extends ImageView {
         }
     }
 
-    static class Rook extends Piece {
+    public static class Rook extends Piece {
 
         Rook(boolean white) {
             this.white = white;
@@ -269,7 +269,7 @@ public abstract class Piece extends ImageView {
         }
     }
 
-    static class Pawn extends Piece {
+    public static class Pawn extends Piece {
 
         Pawn(boolean white) {
             this.white = white;

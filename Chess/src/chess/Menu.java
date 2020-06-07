@@ -1,5 +1,6 @@
 package chess;
 
+import static chess.Chess.SIZE;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -13,20 +14,18 @@ import javafx.scene.text.Text;
 
 public class Menu extends Group {
 
-    private final double size;
     private final double WIDTH;
     private final double GAP;
     private VBox buttons;
 
-    public Menu(double size) {
-        this.size = size;
-        WIDTH = size / 3;
-        GAP = size / 50;
+    public Menu() {
+        WIDTH = SIZE / 3;
+        GAP = SIZE / 50;
         buttons = new VBox(GAP);
         buttons.setAlignment(Pos.CENTER);
-        buttons.setTranslateX((size - WIDTH) / 2);
+        buttons.setTranslateX((SIZE - WIDTH) / 2);
         buttons.setTranslateY(GAP * 15);
-        buttons.getChildren().addAll(newGameButton(), quitButton());
+        buttons.getChildren().addAll(newGameButton(), playAIButton(), quitButton());
         this.getChildren().addAll(overlay(), buttons);
         this.setVisible(false);
     }
@@ -36,7 +35,7 @@ public class Menu extends Group {
     }
 
     private Rectangle overlay() {
-        Rectangle overlay = new Rectangle(size, size);
+        Rectangle overlay = new Rectangle(SIZE, SIZE);
         overlay.setOpacity(.6);
         return overlay;
     }
@@ -44,6 +43,11 @@ public class Menu extends Group {
     private StackPane newGameButton() {
         StackPane newGameButton = createButton("New Game");
         return newGameButton;
+    }
+
+    private StackPane playAIButton() {
+        StackPane playAIButton = createButton("Play AI");
+        return playAIButton;
     }
 
     private StackPane quitButton() {
@@ -57,9 +61,9 @@ public class Menu extends Group {
     private StackPane createButton(String buttonLabel) {
         Rectangle shape = new Rectangle();
         shape.setWidth(WIDTH);
-        shape.setHeight(size / 8);
-        shape.setArcWidth(size / 10);
-        shape.setArcHeight(size / 10);
+        shape.setHeight(SIZE / 8);
+        shape.setArcWidth(SIZE / 10);
+        shape.setArcHeight(SIZE / 10);
         shape.setFill(Color.ALICEBLUE);
         Text label = new Text(buttonLabel);
         label.setScaleX(3);

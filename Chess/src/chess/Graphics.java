@@ -2,7 +2,6 @@ package chess;
 
 import static chess.Chess.SIZE;
 import javafx.scene.Group;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -10,9 +9,41 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public class Graphics {
+
+    public static Group ooordinates() {
+        Group coords = new Group();
+        //Letters
+        for (int i = 0; i < 8; i++) {
+            Text letter = new Text(String.valueOf(Character.toChars(97 + i)));
+            letter.setScaleX(SIZE / 600);
+            letter.setScaleY(SIZE / 600);
+            letter.setTranslateY(SIZE - (SIZE / 9) + (SIZE / 200));
+            letter.setTranslateX(SIZE / 8 * i + (SIZE / 9));
+            letter.setFill(Color.ALICEBLUE);
+            if (i % 2 == 1) {
+                letter.setFill(((Color) letter.getFill()).invert());
+            }
+            letter.setFont(Font.font("MS GOTHIC"));
+            coords.getChildren().add(letter);
+        }
+        //Numbers
+        for (int i = 0; i < 8; i++) {
+            Text number = new Text(8 - i + "");
+            number.setScaleX(SIZE / 600);
+            number.setScaleY(SIZE / 600);
+            number.setTranslateX(SIZE / 150);
+            number.setTranslateY(SIZE / 8 * i + (SIZE / 50));
+            number.setFill(Color.ALICEBLUE);
+            if (i % 2 == 0) {
+                number.setFill(((Color) number.getFill()).invert());
+            }
+            number.setFont(Font.font("MS GOTHIC"));
+            coords.getChildren().add(number);
+        }
+        return coords;
+    }
 
     public static Group checkmate(boolean whiteWinner) {
         final Group checkmate;
@@ -64,11 +95,10 @@ public class Graphics {
         rect.setFill(Color.ALICEBLUE);
         rect.setArcWidth(SIZE / 20);
         rect.setArcHeight(SIZE / 20);
-//        rect.setStrokeWidth(SIZE / 50);
         //Message
         Text msg = new Text(message);
-        msg.setScaleX(5);
-        msg.setScaleY(5);
+        msg.setScaleX(SIZE / 200);
+        msg.setScaleY(SIZE / 200);
         msg.setFont(Font.font("MS PGothic"));
         msg.setFill(Color.GRAY.darker().darker());
         //Stack the nodes
