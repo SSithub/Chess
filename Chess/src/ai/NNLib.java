@@ -74,6 +74,7 @@ public class NNLib extends Application {
      */
     public static class NN implements Serializable {
 
+        public static final long serialVersionUID = 1;
         /**
          * The name of this NN instance. Used in saving, loading, and info
          * panels.
@@ -131,6 +132,7 @@ public class NNLib extends Application {
             for (int i = 0; i < length; i++) {
                 out = network[i].forward(out);
             }
+            System.out.println(out[0][0]);
             return out;
         }
 
@@ -1105,7 +1107,12 @@ public class NNLib extends Application {
         int size1 = a.length;
         int size2 = b.length;
         int size3 = size1 + size2;
-        T[] result = (T[]) Array.newInstance(a[0].getClass(), size3);
+        T[] result;
+        try {
+            result = (T[]) Array.newInstance(a[0].getClass(), size3);
+        } catch (Exception e) {
+            result = (T[]) Array.newInstance(b[0].getClass(), size3);
+        }
         for (int i = 0; i < size1; i++) {
             result[i] = a[i];
         }
@@ -1151,6 +1158,11 @@ public class NNLib extends Application {
     }));
     private static boolean running = false;
 
+    /**
+     *
+     * @param millis Milliseconds between each update of all info panels.
+     * Default is 50 milliseconds
+     */
     public static void setInfoUpdateRate(int millis) {
         updateRate = millis;
     }

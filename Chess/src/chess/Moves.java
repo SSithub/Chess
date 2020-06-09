@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Moves {
 
@@ -150,7 +151,7 @@ public class Moves {
                     front = 1;
                 }
                 Tile enemyPawnTile = newBoard.getTile(move[0] - front, move[1]);
-                moveTile.placePiece(piece);
+                moveTile.placePiece(pawnTile.getPiece());
                 pawnTile.clearPiece();
                 enemyPawnTile.getPiece().setVisible(false);
                 enemyPawnTile.clearPiece();
@@ -303,7 +304,7 @@ public class Moves {
                 String x = String.valueOf(Character.toChars(97 + move[1]));
                 String y = String.valueOf(8 - move[0]);
                 return "Capture Enpassant " + x + y;
-            } else if (special > 2 && special <= 6) {
+            } else if (special >= 3 && special <= 6) {
                 if (special == 3) {
                     return "Promotion to Queen";
                 } else if (special == 4) {

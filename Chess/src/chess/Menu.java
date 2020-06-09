@@ -25,7 +25,7 @@ public class Menu extends Group {
         buttons.setAlignment(Pos.CENTER);
         buttons.setTranslateX((SIZE - WIDTH) / 2);
         buttons.setTranslateY(GAP * 15);
-        buttons.getChildren().addAll(newGameButton(), playAIButton(), quitButton());
+        buttons.getChildren().addAll(newGameButton(), playAIButton(), trainAIButton(), quitButton());
         this.getChildren().addAll(overlay(), buttons);
         this.setVisible(false);
     }
@@ -48,6 +48,11 @@ public class Menu extends Group {
     private StackPane playAIButton() {
         StackPane playAIButton = createButton("Play AI");
         return playAIButton;
+    }
+
+    private StackPane trainAIButton() {
+        StackPane trainAIButton = createButton("Train AI");
+        return trainAIButton;
     }
 
     private StackPane quitButton() {

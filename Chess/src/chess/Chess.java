@@ -43,13 +43,14 @@ public class Chess extends Application {
     }
 
     private void initVars() {
-        game = new Game(this);
         //Graphics
         menu = new Menu();
         whitePlayer = new Player(true);
         blackPlayer = new Player(false);
         inputOverlay.getChildren().addAll(whitePlayer, blackPlayer);
         resetMisc();
+        //Start game
+        game = new Game(this);
     }
 
     public void acceptInputs(boolean white) {
@@ -81,11 +82,16 @@ public class Chess extends Application {
         acceptInputs(true);
         addGraphics(game.getCurrentBoard());
         menu.getButtons().get(0).setOnMouseClicked((t) -> {
-            game.resetGame();
+            game.setHumanVsHuman();
             menu.setVisible(false);
         });
         menu.getButtons().get(1).setOnMouseClicked((t) -> {
-
+            game.setHumanVsAI(false);
+            menu.setVisible(false);
+        });
+        menu.getButtons().get(2).setOnMouseClicked((t) -> {
+            game.setAIVsAI();
+            menu.setVisible(false);
         });
         Scene scene = new Scene(root, SIZE, SIZE);
         setupListeners(scene);

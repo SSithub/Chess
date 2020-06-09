@@ -1,5 +1,7 @@
 package chess;
 
+import ai.AI_Custom;
+import static chess.Chess.SIZE;
 import static chess.Chess.whiteInputs;
 import static chess.Chess.blackInputs;
 import java.util.ArrayList;
@@ -18,21 +20,23 @@ public final class Game {
     private Tile primaryTile;
     private boolean whiteTurn;
     private boolean check;
+    private int[] promotionPawnLoc;
     private int[] promotionLoc;
-    private final Timeline gameLoop = new Timeline(new KeyFrame(Duration.millis(16), handler -> {
-        update();
-    }));
-    private boolean stalemate;
-    private boolean checkmate;
+    private Timeline gameLoop;
+    private AI_Custom ai = new AI_Custom();
+    private boolean aiTurn;
+    private int aiTimer = 0;
+    private final int AIDELAY = 25;//In frames
+    private final int AITRAININGDELAY = 8;//8
+    private boolean trainingAI;
 
     public Game(Chess ui) {
         this.ui = ui;
         resetGame();
-        gameLoop.setCycleCount(-1);
-        gameLoop.play();
+        setHumanVsHuman();
     }
 
-    private void update() {
+    private void HumanVsHuman() {
         int[] inputs = getInputs();
         if (inputs != null) {
             int row = inputs[0];
@@ -54,11 +58,22 @@ public final class Game {
                         history.add(0, newBoard);
                         ui.showBoard(history.get(0));
                         storeFreqOfBoard(history.get(0));
-                        primaryTile = null;
-                        if (history.get(0).getToBePromotedPawn(whiteTurn) == null) {
+                        Piece promotionCheck = history.get(0).getToBePromotedPawn(whiteTurn);
+                        if (promotionCheck == null) {
                             switchTurns();
                             System.out.println(moveHistory.get(0));
+                        } else {//There is a promotion to be made
+                            Piece originalPawn = primaryTile.getPiece();
+                            promotionPawnLoc = new int[]{originalPawn.row, originalPawn.col};
+                            promotionLoc = new int[]{promotionCheck.row, promotionCheck.col};
+                            Group promotionMenu = Graphics.promotion(whiteTurn);
+                            promotionMenu.setTranslateX(history.get(0).getTile(promotionLoc[0], promotionLoc[1]).getTranslateX());
+                            if (originalPawn.white == false) {//If black pawn, move promotion menu halfway down
+                                promotionMenu.setTranslateY(SIZE / 2);
+                            }
+                            ui.addToUI(promotionMenu, false);
                         }
+                        primaryTile = null;
                     } else if (!selectTile.isEmpty() && selectTile.getPiece().white == whiteTurn) {//Selected another ally piece
                         clearHighlights(history.get(0));
                         primaryTile = selectTile;
@@ -68,23 +83,22 @@ public final class Game {
                 }
                 check();
                 gameOverCheck();
-                promotion();
             } else {//For promotion, must make two actions
-                int x = promotionLoc[1];
+                int moveX = promotionLoc[1];
                 if (col == promotionLoc[1]) {
-                    int y = promotionLoc[0];
+                    int moveY = promotionLoc[0];
                     int distance = Math.abs(row - promotionLoc[0]);
                     if (distance < 4) {
+                        int pawnX = promotionPawnLoc[1];
+                        int pawnY = promotionPawnLoc[0];
                         Board lastBoard = history.get(1);
-                        final int behind;
-                        if (whiteTurn) {
-                            behind = 1;
-                        } else {
-                            behind = -1;
+                        Piece originalPawn = lastBoard.getTile(pawnY, pawnX).getPiece();
+                        int[] move = {moveY, moveX, 0, distance + 3};
+                        if (!lastBoard.getTile(moveY, moveX).isEmpty()) {//Capture
+                            move[2] = 1;
                         }
-                        int[] move = {y, x, 0, distance + 3};
-                        history.set(0, Moves.applyMove(lastBoard.getTile(y + behind, x).getPiece(), move, lastBoard));
-                        moveHistory.set(0, lastBoard.getTile(y + behind, x).getPiece() + " " + Moves.moveToString(move));
+                        history.set(0, Moves.applyMove(originalPawn, move, lastBoard));
+                        moveHistory.set(0, originalPawn + " " + Moves.moveToString(move));
                         switchTurns();
                         System.out.println(moveHistory.get(0));
                         ui.showBoard(history.get(0));
@@ -94,6 +108,161 @@ public final class Game {
                 }
             }
         }
+    }
+
+    private void HumanVsAI() {
+        int[] inputs = getInputs();
+        if (inputs != null && !aiTurn) {
+            int row = inputs[0];
+            int col = inputs[1];
+            resetInputs();
+            if (promotionLoc == null) {//For promotion, must make two actions
+                Tile selectTile = history.get(0).getTile(row, col);
+                if (primaryTile == null && !selectTile.isEmpty() && selectTile.getPiece().white == whiteTurn) {//Nothing selected and clicked on ally piece
+                    primaryTile = selectTile;
+                    primaryTile.setPrimary();
+                    highlightMoves(Moves.getMoves(primaryTile.getPiece(), history, false));
+                } else if (primaryTile != null) {//Selected a piece
+                    if (selectTile.isHighlightColored()) {//Is an available move
+                        int[] move = selectTile.getMove();
+                        Piece primaryPiece = primaryTile.getPiece();
+                        Board newBoard = Moves.applyMove(primaryPiece, move, history.get(0));
+                        moveHistory.add(0, primaryPiece + " " + Moves.moveToString(move));
+                        clearHighlights(history.get(0));
+                        history.add(0, newBoard);
+                        ui.showBoard(history.get(0));
+                        storeFreqOfBoard(history.get(0));
+                        Piece promotionCheck = history.get(0).getToBePromotedPawn(whiteTurn);
+                        if (promotionCheck == null) {
+                            switchTurns();
+                            System.out.println(moveHistory.get(0));
+                            aiTurn = true;
+                        } else {//There is a promotion to be made
+                            Piece originalPawn = primaryTile.getPiece();
+                            promotionPawnLoc = new int[]{originalPawn.row, originalPawn.col};
+                            promotionLoc = new int[]{promotionCheck.row, promotionCheck.col};
+                            Group promotionMenu = Graphics.promotion(whiteTurn);
+                            promotionMenu.setTranslateX(history.get(0).getTile(promotionLoc[0], promotionLoc[1]).getTranslateX());
+                            if (originalPawn.white == false) {//If black pawn, move promotion menu halfway down
+                                promotionMenu.setTranslateY(SIZE / 2);
+                            }
+                            ui.addToUI(promotionMenu, false);
+                        }
+                        primaryTile = null;
+                    } else if (!selectTile.isEmpty() && selectTile.getPiece().white == whiteTurn) {//Selected another ally piece
+                        clearHighlights(history.get(0));
+                        primaryTile = selectTile;
+                        primaryTile.setPrimary();
+                        highlightMoves(Moves.getMoves(primaryTile.getPiece(), history, false));
+                    }
+                }
+                check();
+                gameOverCheck();
+            } else {//For promotion, must make two actions
+                int moveX = promotionLoc[1];
+                if (col == promotionLoc[1]) {
+                    int moveY = promotionLoc[0];
+                    int distance = Math.abs(row - promotionLoc[0]);
+                    if (distance < 4) {
+                        int pawnX = promotionPawnLoc[1];
+                        int pawnY = promotionPawnLoc[0];
+                        Board lastBoard = history.get(1);
+                        Piece originalPawn = lastBoard.getTile(pawnY, pawnX).getPiece();
+                        int[] move = {moveY, moveX, 0, distance + 3};
+                        if (!lastBoard.getTile(moveY, moveX).isEmpty()) {//Capture
+                            move[2] = 1;
+                        }
+                        history.set(0, Moves.applyMove(originalPawn, move, lastBoard));
+                        moveHistory.set(0, originalPawn + " " + Moves.moveToString(move));
+                        switchTurns();
+                        System.out.println(moveHistory.get(0));
+                        ui.showBoard(history.get(0));
+                        ui.resetMisc();
+                        promotionLoc = null;
+                        aiTurn = true;
+                    }
+                }
+            }
+        } else if (aiTurn) {
+            if (aiTimer >= AIDELAY) {
+                aiTimer = 0;
+                AITurn();
+            } else {
+                aiTimer++;
+            }
+        }
+    }
+
+    private void AIVsAI() {
+        if (aiTimer >= AITRAININGDELAY) {
+            aiTimer = 0;
+            AITurn();
+            check();
+            gameOverCheck();
+        } else {
+            aiTimer++;
+        }
+    }
+
+    private void AITurn() {
+        Object[] action = ai.getAction(history, whiteTurn);
+        Piece selectedPiece = (Piece) action[0];
+        int[] selectedMove = (int[]) action[1];
+        history.add(0, Moves.applyMove(selectedPiece, selectedMove, history.get(0)));
+        storeFreqOfBoard(history.get(0));
+        moveHistory.add(0, selectedPiece + " " + Moves.moveToString(selectedMove));
+        switchTurns();
+        aiTurn = false;
+        System.out.println(moveHistory.get(0));
+        ui.showBoard(history.get(0));
+    }
+
+    public void setHumanVsHuman() {
+        resetGame();
+        trainingAI = false;
+        try {
+            gameLoop.stop();
+        } catch (Exception e) {
+
+        }
+        gameLoop = new Timeline(new KeyFrame(Duration.millis(16), handler -> {
+            HumanVsHuman();
+        }));
+        gameLoop.setCycleCount(-1);
+        gameLoop.play();
+    }
+
+    public void setHumanVsAI(boolean white) {
+        resetGame();
+        trainingAI = false;
+        try {
+            gameLoop.stop();
+        } catch (Exception e) {
+
+        }
+        if (white) {
+            AITurn();
+        }
+        gameLoop = new Timeline(new KeyFrame(Duration.millis(16), handler -> {
+            HumanVsAI();
+        }));
+        gameLoop.setCycleCount(-1);
+        gameLoop.play();
+    }
+
+    public void setAIVsAI() {
+        resetGame();
+        trainingAI = true;
+        try {
+            gameLoop.stop();
+        } catch (Exception e) {
+
+        }
+        gameLoop = new Timeline(new KeyFrame(Duration.millis(16), handler -> {
+            AIVsAI();
+        }));
+        gameLoop.setCycleCount(-1);
+        gameLoop.play();
     }
 
     private void switchTurns() {
@@ -148,14 +317,17 @@ public final class Game {
     }
 
     public void resetGame() {
-        stalemate = false;
-        checkmate = false;
         promotionLoc = null;
+        promotionPawnLoc = null;
+        boardsFreq.clear();
+        moveHistory.clear();
         history.clear();
-        history.add(new Board(Chess.SIZE));
+        history.add(new Board());
         primaryTile = null;
         whiteTurn = true;
+        ui.acceptInputs(whiteTurn);
         check = false;
+        aiTurn = false;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Tile tile = history.get(0).getTile(i, j);
@@ -173,19 +345,6 @@ public final class Game {
         }
     }
 
-    private void promotion() {
-        Piece pawn = history.get(0).getToBePromotedPawn(whiteTurn);
-        if (pawn != null) {
-            promotionLoc = new int[]{pawn.row, pawn.col};
-            Group promotionMenu = Graphics.promotion(whiteTurn);
-            promotionMenu.setTranslateX(pawn.getTranslateX());
-            if (pawn.white == false) {//If black pawn, move promotion menu halfway down
-                promotionMenu.setTranslateY(pawn.getFitHeight() * 4);
-            }
-            ui.addToUI(promotionMenu, false);
-        }
-    }
-
     private void check() {
         Board board = history.get(0);
         if (Moves.isInCheck(whiteTurn, board)) {
@@ -199,12 +358,24 @@ public final class Game {
 
     private void gameOverStalemate() {
         ui.addToUI(Graphics.stalemate(), true);
-        stalemate = true;
+        gameLoop.stop();
+        if (trainingAI) {
+            ai.learn(0, history);
+            setAIVsAI();
+        }
     }
 
     private void gameOverCheckmate() {
         ui.addToUI(Graphics.checkmate(!whiteTurn), true);
-        checkmate = true;
+        gameLoop.stop();
+        if (trainingAI) {
+            if (whiteTurn) {
+                ai.learn(-1, history);
+            } else {
+                ai.learn(1, history);
+            }
+            setAIVsAI();
+        }
     }
 
     private void gameOverCheck() {
@@ -244,8 +415,8 @@ public final class Game {
     }
 
     private boolean fiftyMoveRule() {
-        if (moveHistory.size() >= 50) {
-            for (int i = 0; i < 50; i++) {
+        if (moveHistory.size() >= 100) {
+            for (int i = 0; i < 100; i++) {
                 String move = moveHistory.get(i);
                 if (move.contains("Capture") || move.contains("Pawn")) {
                     return false;
