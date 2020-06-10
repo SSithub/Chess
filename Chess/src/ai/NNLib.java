@@ -132,7 +132,6 @@ public class NNLib extends Application {
             for (int i = 0; i < length; i++) {
                 out = network[i].forward(out);
             }
-            System.out.println(out[0][0]);
             return out;
         }
 

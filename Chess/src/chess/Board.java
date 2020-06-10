@@ -142,6 +142,10 @@ public class Board {
         board[row][col] = tile;
     }
 
+    public BoardCompressed compress() {
+        return new BoardCompressed(this);
+    }
+
     @Override
     public Board clone() {
         Board clone = new Board();
@@ -189,88 +193,5 @@ public class Board {
         }
         hash = 47 * hash + deepHash;
         return hash;
-    }
-
-    public static class AbstractBoard {
-
-        private String[][] abstracted = new String[8][8];
-
-        AbstractBoard(Board board) {
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    Tile tile = board.getTile(i, j);
-                    if (tile.isEmpty()) {
-                        abstracted[i][j] = "empty";
-                    } else {
-                        Piece piece = tile.getPiece();
-                        final String type;
-                        if (piece instanceof Piece.King) {
-                            type = "king";
-                        } else if (piece instanceof Piece.Queen) {
-                            type = "queen";
-                        } else if (piece instanceof Piece.Bishop) {
-                            type = "bishop";
-                        } else if (piece instanceof Piece.Knight) {
-                            type = "knight";
-                        } else if (piece instanceof Piece.Rook) {
-                            type = "rook";
-                        } else {
-                            type = "pawn";
-                        }
-                        final String notMoved;
-                        if (piece.notMoved) {
-                            notMoved = "notMoved";
-                        } else {
-                            notMoved = "hasMoved";
-                        }
-                        final String color;
-                        if (piece.white) {
-                            color = "white";
-                        } else {
-                            color = "black";
-                        }
-                        abstracted[i][j] = color + type + notMoved;
-                    }
-                }
-            }
-        }
-
-        public Board toBoard() {
-            Board board = new Board();
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    String info = abstracted[i][j];
-                    if (!info.contains("empty")) {
-                        final boolean white;
-                        if (info.contains("white")) {
-                            white = true;
-                        } else {
-                            white = false;
-                        }
-                        final boolean notMoved;
-                        if (info.contains("notMoved")) {
-                            notMoved = true;
-                        } else {
-                            notMoved = false;
-                        }
-                        Tile tile = board.getTile(i, j);
-                        if (info.contains("king")) {
-                            tile.setPiece(new Piece.King(white));
-                        } else if (info.contains("queen")) {
-                            tile.setPiece(new Piece.Queen(white));
-                        } else if (info.contains("bishop")) {
-                            tile.setPiece(new Piece.Bishop(white));
-                        } else if (info.contains("knight")) {
-                            tile.setPiece(new Piece.Knight(white));
-                        } else if (info.contains("rook")) {
-                            tile.setPiece(new Piece.Rook(white));
-                        } else if (info.contains("pawn")) {
-                            tile.setPiece(new Piece.Pawn(white));
-                        }
-                    }
-                }
-            }
-            return board;
-        }
     }
 }
