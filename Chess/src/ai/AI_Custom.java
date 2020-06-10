@@ -6,11 +6,11 @@ import java.util.ArrayList;
 
 public class AI_Custom {
 
-    private NN nn = new NN("chessAI", 7777, .00001, LossFunction.QUADRATIC(.5), Optimizer.ADAM,
+    private NN nn = new NN("chessAI", 7777, .000001, LossFunction.QUADRATIC(.5), Optimizer.ADAM,
             new Layer.Dense(384, 64, ActivationFunction.LEAKYRELU, Initializer.HE),
             new Layer.Dense(64, 8, ActivationFunction.LEAKYRELU, Initializer.HE),
             new Layer.Dense(8, 1, ActivationFunction.TANH, Initializer.HE));
-    private final double exploration = .1;
+    private final double exploration = .2;
 
     public AI_Custom() {
 //        NNLib.showInfo(NNLib.infoLayers, nn);
@@ -20,14 +20,11 @@ public class AI_Custom {
 
     public Object[] getAction(ArrayList<Board> history, boolean white) {
         if (nn.getRandom().nextDouble() < exploration) {
-            System.out.println("random");
             return randomAction(history, white);
         } else {
             if (white) {
-                System.out.println("white");
                 return maxValuedAction(history, white);
             } else {
-                System.out.println("black");
                 return minValuedAction(history, white);
             }
         }
@@ -77,7 +74,7 @@ public class AI_Custom {
     private Object[] maxValuedAction(ArrayList<Board> history, boolean white) {
         Board current = history.get(0);
         ArrayList<Piece> pieces = current.getPieces(white);
-        float max = Float.MIN_VALUE;
+        float max = -2;
         Piece selectedPiece = null;
         int[] selectedMove = null;
         int piecesSize = pieces.size();
@@ -92,15 +89,61 @@ public class AI_Custom {
                     for (int k = 0; k < 4; k++) {//Test each promotion
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
-                        if (nn.feedforward(boardToInputs(promotion))[0][0] > max) {
+                        float value = nn.feedforward(boardToInputs(promotion))[0][0];
+                        if (value > max) {
                             selectedPiece = piece;
                             selectedMove = promotionMove;
+                            max = value;
                         }
                     }
                 } else {//No promotion
-                    if (nn.feedforward(boardToInputs(simulated))[0][0] > max) {
+                    float value = nn.feedforward(boardToInputs(simulated))[0][0];
+                    if (value > max) {
                         selectedPiece = piece;
                         selectedMove = move;
+                        max = value;
+                    }
+                }
+            }
+        }
+        Object[] selected = {selectedPiece, selectedMove};
+        return selected;
+    }
+//    private Object[] maxValuedAction(ArrayList<Board> history, boolean white) {
+//
+//    }
+
+    private Object[] minValuedAction(ArrayList<Board> history, boolean white) {
+        Board current = history.get(0);
+        ArrayList<Piece> pieces = current.getPieces(white);
+        float min = 2;
+        Piece selectedPiece = null;
+        int[] selectedMove = null;
+        int piecesSize = pieces.size();
+        for (int i = 0; i < piecesSize; i++) {//Test each piece
+            Piece piece = pieces.get(i);
+            ArrayList<int[]> moves = Moves.getMoves(piece, history, false);
+            int movesSize = moves.size();
+            for (int j = 0; j < movesSize; j++) {//Test each move of the piece
+                int[] move = moves.get(j);
+                Board simulated = Moves.applyMove(piece, move, current);
+                if (simulated.getToBePromotedPawn(white) != null) {//If promotion
+                    for (int k = 0; k < 4; k++) {//Test each promotion
+                        int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
+                        Board promotion = Moves.applyMove(piece, promotionMove, current);
+                        float value = nn.feedforward(boardToInputs(promotion))[0][0];
+                        if (value < min) {
+                            selectedPiece = piece;
+                            selectedMove = promotionMove;
+                            min = value;
+                        }
+                    }
+                } else {//No promotion
+                    float value = nn.feedforward(boardToInputs(simulated))[0][0];
+                    if (value < min) {
+                        selectedPiece = piece;
+                        selectedMove = move;
+                        min = value;
                     }
                 }
             }
@@ -109,41 +152,6 @@ public class AI_Custom {
         return selected;
     }
 
-    private Object[] minValuedAction(ArrayList<Board> history, boolean white) {
-        Board current = history.get(0);
-        ArrayList<Piece> pieces = current.getPieces(white);
-        float min = Float.MAX_VALUE;
-        Piece selectedPiece = null;
-        int[] selectedMove = null;
-        int piecesSize = pieces.size();
-        for (int i = 0; i < piecesSize; i++) {//Test each piece
-            Piece piece = pieces.get(i);
-            ArrayList<int[]> moves = Moves.getMoves(piece, history, false);
-            int movesSize = moves.size();
-            for (int j = 0; j < movesSize; j++) {//Test each move of the piece
-                int[] move = moves.get(j);
-                Board simulated = Moves.applyMove(piece, move, current);
-                if (simulated.getToBePromotedPawn(white) != null) {//If promotion
-                    for (int k = 0; k < 4; k++) {//Test each promotion
-                        int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
-                        Board promotion = Moves.applyMove(piece, promotionMove, current);
-                        if (nn.feedforward(boardToInputs(promotion))[0][0] < min) {
-                            selectedPiece = piece;
-                            selectedMove = promotionMove;
-                        }
-                    }
-                } else {//No promotion
-                    if (nn.feedforward(boardToInputs(simulated))[0][0] < min) {
-                        selectedPiece = piece;
-                        selectedMove = move;
-                    }
-                }
-            }
-        }
-        Object[] selected = {selectedPiece, selectedMove};
-        return selected;
-    }
-    
     private float[][] boardToInputs(Board board) {//Inputs into the network will be 1s and 0s, with each tile being represented by 6 numbers, for each of the possible pieces
         float[][] inputs = new float[1][384];
         for (int i = 0; i < 8; i++) {
