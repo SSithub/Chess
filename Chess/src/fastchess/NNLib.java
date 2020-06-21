@@ -1,4 +1,4 @@
-package ai;
+package fastchess;
 
 import java.io.File;
 import java.io.FileInputStream;

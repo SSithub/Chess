@@ -4,15 +4,15 @@ import chess.*;
 import ai.NNLib.*;
 import java.util.ArrayList;
 
-public class AI_Custom {
+public class AICustom {
 
-    private NN nn = new NN("chessAI", 7777, .000001, LossFunction.QUADRATIC(.5), Optimizer.ADAM,
-            new Layer.Dense(384, 64, ActivationFunction.LEAKYRELU, Initializer.HE),
-            new Layer.Dense(64, 8, ActivationFunction.LEAKYRELU, Initializer.HE),
-            new Layer.Dense(8, 1, ActivationFunction.TANH, Initializer.HE));
-    private final double exploration = .2;
+    private NN nn = new NN("chessAI", 7777, .0001, LossFunction.QUADRATIC(.5), Optimizer.AMSGRAD,
+            new Layer.Dense(384, 128, ActivationFunction.TANH, Initializer.XAVIER),
+            new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
+            new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
+    private final double exploration = 0;
 
-    public AI_Custom() {
+    public AICustom() {
 //        NNLib.showInfo(NNLib.infoLayers, nn);
 //        NNLib.setInfoUpdateRate(100000);
         nn.load();
@@ -90,6 +90,7 @@ public class AI_Custom {
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
                         float value = nn.feedforward(boardToInputs(promotion))[0][0];
+                        System.out.println(value);
                         if (value > max) {
                             selectedPiece = piece;
                             selectedMove = promotionMove;
@@ -98,6 +99,7 @@ public class AI_Custom {
                     }
                 } else {//No promotion
                     float value = nn.feedforward(boardToInputs(simulated))[0][0];
+                    System.out.println(value);
                     if (value > max) {
                         selectedPiece = piece;
                         selectedMove = move;
@@ -132,6 +134,7 @@ public class AI_Custom {
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
                         float value = nn.feedforward(boardToInputs(promotion))[0][0];
+//                        System.out.println(value);
                         if (value < min) {
                             selectedPiece = piece;
                             selectedMove = promotionMove;
@@ -140,6 +143,7 @@ public class AI_Custom {
                     }
                 } else {//No promotion
                     float value = nn.feedforward(boardToInputs(simulated))[0][0];
+//                    System.out.println(value);
                     if (value < min) {
                         selectedPiece = piece;
                         selectedMove = move;
@@ -156,29 +160,30 @@ public class AI_Custom {
         float[][] inputs = new float[1][384];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                int indexInInputs = i * 8 + j * 6;
+                int indexInInputs = i * 48 + j * 6;
                 for (int k = 0; k < 6; k++) {
-                    inputs[0][indexInInputs + k] = 0f;
+                    inputs[0][indexInInputs + k] = 0;
                 }
                 Tile tile = board.getTile(i, j);
                 if (!tile.isEmpty()) {
                     Piece piece = tile.getPiece();
                     if (piece instanceof Piece.King) {
-                        inputs[0][indexInInputs] = 1f;
+                        inputs[0][indexInInputs] = 1;
                     } else if (piece instanceof Piece.Queen) {
-                        inputs[0][indexInInputs + 1] = 1f;
+                        inputs[0][indexInInputs + 1] = 1;
                     } else if (piece instanceof Piece.Bishop) {
-                        inputs[0][indexInInputs + 2] = 1f;
+                        inputs[0][indexInInputs + 2] = 1;
                     } else if (piece instanceof Piece.Knight) {
-                        inputs[0][indexInInputs + 3] = 1f;
+                        inputs[0][indexInInputs + 3] = 1;
                     } else if (piece instanceof Piece.Rook) {
-                        inputs[0][indexInInputs + 4] = 1f;
+                        inputs[0][indexInInputs + 4] = 1;
                     } else if (piece instanceof Piece.Pawn) {
-                        inputs[0][indexInInputs + 5] = 1f;
+                        inputs[0][indexInInputs + 5] = 1;
                     }
                 }
             }
         }
+//        NNLib.print(inputs);
         return inputs;
     }
 }

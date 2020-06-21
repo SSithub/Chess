@@ -9,7 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 public class Chess extends Application {
-
+    
     final static double SIZE = 1000;
     private static Group root = new Group();
     private static Group inputOverlay = new Group();
@@ -20,7 +20,7 @@ public class Chess extends Application {
     private Player whitePlayer;
     private Player blackPlayer;
     private Game game;
-
+    
     private void setupListeners(Scene scene) {
         scene.setOnKeyPressed((t) -> {
             if (t.getCode().equals(KeyCode.ESCAPE)) {
@@ -32,16 +32,16 @@ public class Chess extends Application {
             }
         });
     }
-
+    
     private void addGraphics(Board board) {
         root.getChildren().addAll(board.getTileList(), Graphics.ooordinates(), board.getPieceList(), miscUI);
     }
-
+    
     public void showBoard(Board board) {
         root.getChildren().set(0, board.getTileList());
         root.getChildren().set(2, board.getPieceList());
     }
-
+    
     private void initVars() {
         //Graphics
         menu = new Menu();
@@ -52,7 +52,7 @@ public class Chess extends Application {
         //Start game
         game = new Game(this);
     }
-
+    
     public void acceptInputs(boolean white) {
         if (!white) {
             whitePlayer.setVisible(false);
@@ -62,12 +62,12 @@ public class Chess extends Application {
             blackPlayer.setVisible(false);
         }
     }
-
+    
     public void resetMisc() {
         miscUI.getChildren().clear();
         miscUI.getChildren().addAll(inputOverlay, menu);
     }
-
+    
     public void addToUI(Node node, boolean overInputs) {
         if (overInputs) {
             miscUI.getChildren().add(1, node);
@@ -75,7 +75,11 @@ public class Chess extends Application {
             miscUI.getChildren().add(0, node);
         }
     }
-
+    
+    public void incrementScores(int stat) {
+        menu.incrementScore(stat);
+    }
+    
     @Override
     public void start(Stage primaryStage) {
         initVars();
@@ -93,6 +97,9 @@ public class Chess extends Application {
             game.setAIVsAI();
             menu.setVisible(false);
         });
+        menu.getSlider().valueProperty().addListener((ov, t, t1) -> {
+            game.setLoopRate(t1.doubleValue());
+        });
         Scene scene = new Scene(root, SIZE, SIZE);
         setupListeners(scene);
         primaryStage.setScene(scene);
@@ -101,7 +108,7 @@ public class Chess extends Application {
         primaryStage.setTitle("JavaFX Chess");
         primaryStage.show();
     }
-
+    
     public static void main(String[] args) {
         launch(args);
     }
