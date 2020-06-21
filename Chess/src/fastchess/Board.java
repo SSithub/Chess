@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class Board {
 
-    Piece[][] pieces;
+    public Piece[][] pieces;
 
     public Board() {
         pieces = new Piece[8][8];

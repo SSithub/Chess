@@ -1,7 +1,7 @@
 package ai;
 
 import fastchess.*;
-import ai.NNLib.*;
+import fastchess.NNLib.*;
 import java.util.ArrayList;
 
 public class AICustomFast {
@@ -53,10 +53,12 @@ public class AICustomFast {
         int piecesSize = pieces.size();
         for (int i = 0; i < piecesSize; i++) {//Test each piece
             Piece piece = pieces.get(i);
+//            System.out.println(piece + Moves.locToString(new int[]{piece.row, piece.col}));
             ArrayList<int[]> moves = Moves.getMoves(piece, history, false);
             int movesSize = moves.size();
             for (int j = 0; j < movesSize; j++) {//Test each move of the piece
                 int[] move = moves.get(j);
+//                System.out.println(Moves.moveToString(move));
                 Board simulated = Moves.applyMove(piece, move, current);
                 if (simulated.getToBePromotedPawn(white) != null) {//If promotion
                     for (int k = 0; k < 4; k++) {//Test each promotion
@@ -90,7 +92,7 @@ public class AICustomFast {
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
                         float value = nn.feedforward(boardToInputs(promotion))[0][0];
-                        System.out.println(value);
+//                        System.out.println(value);
                         if (value > max) {
                             selectedPiece = piece;
                             selectedMove = promotionMove;
@@ -99,7 +101,7 @@ public class AICustomFast {
                     }
                 } else {//No promotion
                     float value = nn.feedforward(boardToInputs(simulated))[0][0];
-                    System.out.println(value);
+//                    System.out.println(value);
                     if (value > max) {
                         selectedPiece = piece;
                         selectedMove = move;
@@ -111,9 +113,6 @@ public class AICustomFast {
         Object[] selected = {selectedPiece, selectedMove};
         return selected;
     }
-//    private Object[] maxValuedAction(ArrayList<Board> history, boolean white) {
-//
-//    }
 
     private Object[] minValuedAction(ArrayList<Board> history, boolean white) {
         Board current = history.get(0);
@@ -164,20 +163,19 @@ public class AICustomFast {
                 for (int k = 0; k < 6; k++) {
                     inputs[0][indexInInputs + k] = 0;
                 }
-                Tile tile = board.getTile(i, j);
-                if (!tile.isEmpty()) {
-                    Piece piece = tile.getPiece();
-                    if (piece instanceof Piece.King) {
+                Piece piece = board.pieces[i][j];
+                if (piece != null) {
+                    if (piece.isKing()) {
                         inputs[0][indexInInputs] = 1;
-                    } else if (piece instanceof Piece.Queen) {
+                    } else if (piece.isQueen()) {
                         inputs[0][indexInInputs + 1] = 1;
-                    } else if (piece instanceof Piece.Bishop) {
+                    } else if (piece.isBishop()) {
                         inputs[0][indexInInputs + 2] = 1;
-                    } else if (piece instanceof Piece.Knight) {
+                    } else if (piece.isKnight()) {
                         inputs[0][indexInInputs + 3] = 1;
-                    } else if (piece instanceof Piece.Rook) {
+                    } else if (piece.isRook()) {
                         inputs[0][indexInInputs + 4] = 1;
-                    } else if (piece instanceof Piece.Pawn) {
+                    } else if (piece.isPawn()) {
                         inputs[0][indexInInputs + 5] = 1;
                     }
                 }

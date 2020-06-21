@@ -1,11 +1,12 @@
 package fastchess;
 
+import ai.AICustomFast;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Game {
 
-    public AI_Custom ai = new AI_Custom();
+    public AICustomFast ai = new AICustomFast();
     public ArrayList<Board> history = new ArrayList<>();
     public HashMap<Board, Integer> boardFreq = new HashMap<>();
     public ArrayList<String> moveHistory = new ArrayList<>();
