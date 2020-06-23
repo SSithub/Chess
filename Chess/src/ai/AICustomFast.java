@@ -1,13 +1,13 @@
 package ai;
 
 import fastchess.*;
-import fastchess.NNLib.*;
+import ai.NNLib.*;
 import java.util.ArrayList;
 
 public class AICustomFast {
 
     private NN nn = new NN("chessAI", 7777, .0001, LossFunction.QUADRATIC(.5), Optimizer.AMSGRAD,
-            new Layer.Dense(384, 128, ActivationFunction.TANH, Initializer.XAVIER),
+            new Layer.Dense(768, 128, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
     private final double exploration = .5;
@@ -53,12 +53,10 @@ public class AICustomFast {
         int piecesSize = pieces.size();
         for (int i = 0; i < piecesSize; i++) {//Test each piece
             Piece piece = pieces.get(i);
-//            System.out.println(piece + Moves.locToString(new int[]{piece.row, piece.col}));
             ArrayList<int[]> moves = Moves.getMoves(piece, history, false);
             int movesSize = moves.size();
             for (int j = 0; j < movesSize; j++) {//Test each move of the piece
                 int[] move = moves.get(j);
-//                System.out.println(Moves.moveToString(move));
                 Board simulated = Moves.applyMove(piece, move, current);
                 if (simulated.getToBePromotedPawn(white) != null) {//If promotion
                     for (int k = 0; k < 4; k++) {//Test each promotion
@@ -156,27 +154,43 @@ public class AICustomFast {
     }
 
     private float[][] boardToInputs(Board board) {//Inputs into the network will be 1s and 0s, with each tile being represented by 6 numbers, for each of the possible pieces
-        float[][] inputs = new float[1][384];
+        float[][] inputs = new float[1][768];//384
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                int indexInInputs = i * 48 + j * 6;
-                for (int k = 0; k < 6; k++) {
+                int indexInInputs = i * 96 + j * 12;
+                for (int k = 0; k < 12; k++) {
                     inputs[0][indexInInputs + k] = 0;
                 }
                 Piece piece = board.pieces[i][j];
                 if (piece != null) {
-                    if (piece.isKing()) {
-                        inputs[0][indexInInputs] = 1;
-                    } else if (piece.isQueen()) {
-                        inputs[0][indexInInputs + 1] = 1;
-                    } else if (piece.isBishop()) {
-                        inputs[0][indexInInputs + 2] = 1;
-                    } else if (piece.isKnight()) {
-                        inputs[0][indexInInputs + 3] = 1;
-                    } else if (piece.isRook()) {
-                        inputs[0][indexInInputs + 4] = 1;
-                    } else if (piece.isPawn()) {
-                        inputs[0][indexInInputs + 5] = 1;
+                    if (piece.white) {
+                        if (piece.isKing()) {
+                            inputs[0][indexInInputs] = 1;
+                        } else if (piece.isQueen()) {
+                            inputs[0][indexInInputs + 1] = 1;
+                        } else if (piece.isBishop()) {
+                            inputs[0][indexInInputs + 2] = 1;
+                        } else if (piece.isKnight()) {
+                            inputs[0][indexInInputs + 3] = 1;
+                        } else if (piece.isRook()) {
+                            inputs[0][indexInInputs + 4] = 1;
+                        } else if (piece.isPawn()) {
+                            inputs[0][indexInInputs + 5] = 1;
+                        }
+                    } else {
+                        if (piece.isKing()) {
+                            inputs[0][indexInInputs + 6] = 1;
+                        } else if (piece.isQueen()) {
+                            inputs[0][indexInInputs + 7] = 1;
+                        } else if (piece.isBishop()) {
+                            inputs[0][indexInInputs + 8] = 1;
+                        } else if (piece.isKnight()) {
+                            inputs[0][indexInInputs + 9] = 1;
+                        } else if (piece.isRook()) {
+                            inputs[0][indexInInputs + 10] = 1;
+                        } else if (piece.isPawn()) {
+                            inputs[0][indexInInputs + 11] = 1;
+                        }
                     }
                 }
             }

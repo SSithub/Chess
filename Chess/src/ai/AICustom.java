@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class AICustom {
 
     private NN nn = new NN("chessAI", 7777, .0001, LossFunction.QUADRATIC(.5), Optimizer.AMSGRAD,
-            new Layer.Dense(384, 128, ActivationFunction.TANH, Initializer.XAVIER),
+            new Layer.Dense(768, 128, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
     private final double exploration = 0;
@@ -157,28 +157,44 @@ public class AICustom {
     }
 
     private float[][] boardToInputs(Board board) {//Inputs into the network will be 1s and 0s, with each tile being represented by 6 numbers, for each of the possible pieces
-        float[][] inputs = new float[1][384];
+        float[][] inputs = new float[1][768];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                int indexInInputs = i * 48 + j * 6;
-                for (int k = 0; k < 6; k++) {
+                int indexInInputs = i * 96 + j * 12;
+                for (int k = 0; k < 12; k++) {
                     inputs[0][indexInInputs + k] = 0;
                 }
                 Tile tile = board.getTile(i, j);
                 if (!tile.isEmpty()) {
                     Piece piece = tile.getPiece();
-                    if (piece instanceof Piece.King) {
-                        inputs[0][indexInInputs] = 1;
-                    } else if (piece instanceof Piece.Queen) {
-                        inputs[0][indexInInputs + 1] = 1;
-                    } else if (piece instanceof Piece.Bishop) {
-                        inputs[0][indexInInputs + 2] = 1;
-                    } else if (piece instanceof Piece.Knight) {
-                        inputs[0][indexInInputs + 3] = 1;
-                    } else if (piece instanceof Piece.Rook) {
-                        inputs[0][indexInInputs + 4] = 1;
-                    } else if (piece instanceof Piece.Pawn) {
-                        inputs[0][indexInInputs + 5] = 1;
+                    if (piece.isWhite()) {
+                        if (piece instanceof Piece.King) {
+                            inputs[0][indexInInputs] = 1;
+                        } else if (piece instanceof Piece.Queen) {
+                            inputs[0][indexInInputs + 1] = 1;
+                        } else if (piece instanceof Piece.Bishop) {
+                            inputs[0][indexInInputs + 2] = 1;
+                        } else if (piece instanceof Piece.Knight) {
+                            inputs[0][indexInInputs + 3] = 1;
+                        } else if (piece instanceof Piece.Rook) {
+                            inputs[0][indexInInputs + 4] = 1;
+                        } else if (piece instanceof Piece.Pawn) {
+                            inputs[0][indexInInputs + 5] = 1;
+                        }
+                    } else {
+                        if (piece instanceof Piece.King) {
+                            inputs[0][indexInInputs + 6] = 1;
+                        } else if (piece instanceof Piece.Queen) {
+                            inputs[0][indexInInputs + 7] = 1;
+                        } else if (piece instanceof Piece.Bishop) {
+                            inputs[0][indexInInputs + 8] = 1;
+                        } else if (piece instanceof Piece.Knight) {
+                            inputs[0][indexInInputs + 9] = 1;
+                        } else if (piece instanceof Piece.Rook) {
+                            inputs[0][indexInInputs + 10] = 1;
+                        } else if (piece instanceof Piece.Pawn) {
+                            inputs[0][indexInInputs + 11] = 1;
+                        }
                     }
                 }
             }

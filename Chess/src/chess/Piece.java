@@ -65,6 +65,10 @@ public abstract class Piece extends ImageView {
         }
     }
 
+    public boolean isWhite() {
+        return white;
+    }
+
     @Override
     public abstract Piece clone();
 
