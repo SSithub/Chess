@@ -10,7 +10,7 @@ public class AICustomFast {
             new Layer.Dense(768, 128, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
-    private final double exploration = .5;
+    private final double exploration = .1;
 
     public AICustomFast() {
 //        NNLib.showInfo(NNLib.infoLayers, nn);
@@ -154,7 +154,7 @@ public class AICustomFast {
     }
 
     private float[][] boardToInputs(Board board) {//Inputs into the network will be 1s and 0s, with each tile being represented by 6 numbers, for each of the possible pieces
-        float[][] inputs = new float[1][768];//384
+        float[][] inputs = new float[1][768];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 int indexInInputs = i * 96 + j * 12;
@@ -195,7 +195,18 @@ public class AICustomFast {
                 }
             }
         }
-//        NNLib.print(inputs);
+//        System.out.println("Board-------------------------------------------------------");
+//        for (int i = 0; i < 8; i++) {
+//            for (int j = 0; j < 8; j++) {
+//                for (int k = 0; k < 12; k++) {
+//                    System.out.print("[" + inputs[0][i * 96 + j * 12 + k] + "]");
+//                }
+//                System.out.println("");
+//            }
+//            System.out.println("next row");
+//        }
+//        System.out.println("End---------------------------------------------------------");
+//        System.out.println("");
         return inputs;
     }
 }
