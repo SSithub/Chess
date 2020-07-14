@@ -10,7 +10,7 @@ public class AICustomFast {
             new Layer.Dense(768, 128, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
             new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
-    private final double exploration = .1;
+    private final double exploration = .3;
 
     public AICustomFast() {
 //        NNLib.showInfo(NNLib.infoLayers, nn);

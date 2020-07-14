@@ -1,6 +1,9 @@
 package fastchess;
 
 import ai.AICustomFast;
+import static fastchess.FastChess.BOARDPRINTING;
+import static fastchess.FastChess.GAMEOVERPRINTING;
+import static fastchess.FastChess.TRAINING;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,12 +19,10 @@ public class Game {
     public int blackWins = 0;
     public int stalemates = 0;
     public boolean gameOver = false;
-    public final boolean TRAINING = true;
-    public final boolean PRINTING = false;
 
     public void newGame() {
         reset();
-        if (PRINTING) {
+        if (BOARDPRINTING) {
             System.out.println(history.get(0));
         }
         while (!gameOver) {
@@ -49,7 +50,7 @@ public class Game {
         history.add(0, newBoard);
         storeFreqOfBoard(newBoard);
         moveHistory.add(0, selectedPiece + " " + Moves.moveToString(selectedMove));
-        if (PRINTING) {
+        if (BOARDPRINTING) {
             System.out.println(moveHistory.get(0));
             System.out.println(history.get(0));
         }
@@ -84,23 +85,23 @@ public class Game {
             if (check) {//Checkmate
                 gameOverCheckmate();
             } else {//Stalemate
-                if (PRINTING) {
+                if (GAMEOVERPRINTING) {
                     System.out.println("No Valid Moves");
                 }
                 gameOverStalemate();
             }
         } else if (fivefoldRepetitionRule()) {
-            if (PRINTING) {
+            if (GAMEOVERPRINTING) {
                 System.out.println("Fivefold Repetition");
             }
             gameOverStalemate();
         } else if (fiftyMoveRule()) {
-            if (PRINTING) {
+            if (GAMEOVERPRINTING) {
                 System.out.println("Fifty moves without captures or moved pawns");
             }
             gameOverStalemate();
         } else if (insufficientMaterial()) {
-            if (PRINTING) {
+            if (GAMEOVERPRINTING) {
                 System.out.println("Insufficient material");
             }
             gameOverStalemate();
@@ -122,7 +123,7 @@ public class Game {
     private void gameOverCheckmate() {
         if (!whiteTurn) {
             whiteWins++;
-            if (PRINTING) {
+            if (GAMEOVERPRINTING) {
                 System.out.println("WHITE WINS");
             }
             if (TRAINING) {
@@ -130,7 +131,7 @@ public class Game {
             }
         } else {
             blackWins++;
-            if (PRINTING) {
+            if (GAMEOVERPRINTING) {
                 System.out.println("BLACK WINS");
             }
             if (TRAINING) {
@@ -141,7 +142,7 @@ public class Game {
     }
 
     private void gameOverStalemate() {
-        if (PRINTING) {
+        if (GAMEOVERPRINTING) {
             System.out.println("STALEMATE");
         }
         stalemates++;

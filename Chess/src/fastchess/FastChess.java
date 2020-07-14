@@ -8,6 +8,9 @@ public class FastChess {
     public static Game game = new Game();
     public static long iterations = 0;
     public static long start;
+    public static final boolean TRAINING = true;
+    public static final boolean BOARDPRINTING = false;
+    public static final boolean GAMEOVERPRINTING = false;
 
     public static void training() {
         start = System.currentTimeMillis();
