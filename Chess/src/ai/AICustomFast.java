@@ -6,10 +6,7 @@ import java.util.ArrayList;
 
 public class AICustomFast {
 
-    private NN nn = new NN("chessAI", 7777, .0001, LossFunction.QUADRATIC(.5), Optimizer.AMSGRAD,
-            new Layer.Dense(768, 128, ActivationFunction.TANH, Initializer.XAVIER),
-            new Layer.Dense(128, 64, ActivationFunction.TANH, Initializer.XAVIER),
-            new Layer.Dense(64, 1, ActivationFunction.TANH, Initializer.XAVIER));
+    private NN nn = ChessNN.nn;
     private final double exploration = .3;
 
     public AICustomFast() {

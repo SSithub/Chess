@@ -10,7 +10,7 @@ public class FastChess {
     public static long start;
     public static final boolean TRAINING = true;
     public static final boolean BOARDPRINTING = false;
-    public static final boolean GAMEOVERPRINTING = false;
+    public static final boolean GAMEOVERPRINTING = true;
 
     public static void training() {
         start = System.currentTimeMillis();

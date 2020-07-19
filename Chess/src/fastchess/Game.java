@@ -86,23 +86,23 @@ public class Game {
                 gameOverCheckmate();
             } else {//Stalemate
                 if (GAMEOVERPRINTING) {
-                    System.out.println("No Valid Moves");
+                    System.out.print("No Valid Moves ");
                 }
                 gameOverStalemate();
             }
         } else if (fivefoldRepetitionRule()) {
             if (GAMEOVERPRINTING) {
-                System.out.println("Fivefold Repetition");
+                System.out.print("Fivefold Repetition ");
             }
             gameOverStalemate();
         } else if (fiftyMoveRule()) {
             if (GAMEOVERPRINTING) {
-                System.out.println("Fifty moves without captures or moved pawns");
+                System.out.print("Fifty moves without captures or moved pawns ");
             }
             gameOverStalemate();
         } else if (insufficientMaterial()) {
             if (GAMEOVERPRINTING) {
-                System.out.println("Insufficient material");
+                System.out.print("Insufficient material ");
             }
             gameOverStalemate();
         }
