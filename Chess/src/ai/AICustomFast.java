@@ -1,13 +1,13 @@
 package ai;
 
 import fastchess.*;
-import ai.NNLib.*;
+import ai.NNlib.*;
 import java.util.ArrayList;
 
 public class AICustomFast {
 
     private NN nn = ChessNN.nn;
-    private final double exploration = .3;
+    private final double exploration = .05;
 
     public AICustomFast() {
 //        NNLib.showInfo(NNLib.infoLayers, nn);
@@ -38,7 +38,7 @@ public class AICustomFast {
             target = new float[][]{{-1}};
         }
         for (int i = 0; i < historySize; i++) {
-            nn.backpropagation(boardToInputs(history.get(i)), target);
+            nn.backpropagation(boardToInputs3d(history.get(i)), target);
         }
         nn.save();
     }
@@ -86,7 +86,7 @@ public class AICustomFast {
                     for (int k = 0; k < 4; k++) {//Test each promotion
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
-                        float value = nn.feedforward(boardToInputs(promotion))[0][0];
+                        float value = ((float[][]) nn.feedforward(boardToInputs3d(promotion)))[0][0];
 //                        System.out.println(value);
                         if (value > max) {
                             selectedPiece = piece;
@@ -95,7 +95,7 @@ public class AICustomFast {
                         }
                     }
                 } else {//No promotion
-                    float value = nn.feedforward(boardToInputs(simulated))[0][0];
+                    float value = ((float[][]) nn.feedforward(boardToInputs3d(simulated)))[0][0];
 //                    System.out.println(value);
                     if (value > max) {
                         selectedPiece = piece;
@@ -127,7 +127,7 @@ public class AICustomFast {
                     for (int k = 0; k < 4; k++) {//Test each promotion
                         int[] promotionMove = {move[0], move[1], move[2], k + 3};//Promotion moves start at 3
                         Board promotion = Moves.applyMove(piece, promotionMove, current);
-                        float value = nn.feedforward(boardToInputs(promotion))[0][0];
+                        float value = ((float[][]) nn.feedforward(boardToInputs3d(promotion)))[0][0];
 //                        System.out.println(value);
                         if (value < min) {
                             selectedPiece = piece;
@@ -136,7 +136,7 @@ public class AICustomFast {
                         }
                     }
                 } else {//No promotion
-                    float value = nn.feedforward(boardToInputs(simulated))[0][0];
+                    float value = ((float[][]) nn.feedforward(boardToInputs3d(simulated)))[0][0];
 //                    System.out.println(value);
                     if (value < min) {
                         selectedPiece = piece;
@@ -148,6 +148,47 @@ public class AICustomFast {
         }
         Object[] selected = {selectedPiece, selectedMove};
         return selected;
+    }
+
+    private float[][][] boardToInputs3d(Board board) {
+        float[][][] inputs = new float[12][8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Piece piece = board.pieces[i][j];
+                if (piece != null) {
+                    if (piece.white) {
+                        if (piece.isKing()) {
+                            inputs[0][i][j] = 1;
+                        } else if (piece.isQueen()) {
+                            inputs[1][i][j] = 1;
+                        } else if (piece.isBishop()) {
+                            inputs[2][i][j] = 1;
+                        } else if (piece.isKnight()) {
+                            inputs[3][i][j] = 1;
+                        } else if (piece.isRook()) {
+                            inputs[4][i][j] = 1;
+                        } else if (piece.isPawn()) {
+                            inputs[5][i][j] = 1;
+                        }
+                    } else {
+                        if (piece.isKing()) {
+                            inputs[6][i][j] = 1;
+                        } else if (piece.isQueen()) {
+                            inputs[7][i][j] = 1;
+                        } else if (piece.isBishop()) {
+                            inputs[8][i][j] = 1;
+                        } else if (piece.isKnight()) {
+                            inputs[9][i][j] = 1;
+                        } else if (piece.isRook()) {
+                            inputs[10][i][j] = 1;
+                        } else if (piece.isPawn()) {
+                            inputs[11][i][j] = 1;
+                        }
+                    }
+                }
+            }
+        }
+        return inputs;
     }
 
     private float[][] boardToInputs(Board board) {//Inputs into the network will be 1s and 0s, with each tile being represented by 6 numbers, for each of the possible pieces
